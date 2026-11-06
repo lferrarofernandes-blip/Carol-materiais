@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Café da Esquina</title>
+<style>
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+:root{
+  --madeira:#7a4e2d; --madeira-e:#54341c; --madeira-c:#a8734a;
+  --creme:#fdf5e8; --papel:#fffaf0; --ink:#3a2615; --ink2:#5c422c;
+  --muted:#9a7f63; --linha:#e4d4bc;
+  --cafe:#6f4518; --leite:#f2e2c9; --canela:#d99a4e;
+  --verde:#4a8f5c; --verde-l:#e6f4e9;
+  --vermelho:#b8432f; --vermelho-l:#fcebe6;
+  --dourado:#d4a017; --rosa:#e08a9a;
+}
+body{
+  font-family:'Trebuchet MS','Segoe UI',system-ui,sans-serif;
+  background:var(--madeira);
+  background-image:repeating-linear-gradient(90deg,rgba(0,0,0,.06) 0 2px,transparent 2px 46px);
+  min-height:100vh; color:var(--ink); font-size:16px; line-height:1.55;
+}
+.wrap{ max-width:700px; margin:0 auto; padding:16px 16px 70px; }
+
+/* PLACA */
+.placa{
+  background:var(--creme); border:5px solid var(--madeira-e); border-radius:8px;
+  padding:14px 18px; margin-bottom:16px; text-align:center;
+  box-shadow:0 6px 0 rgba(0,0,0,.25);
+}
+.placa-nome{ font-size:25px; font-weight:800; color:var(--cafe); letter-spacing:.04em; }
+.placa-sub{ font-size:12px; color:var(--muted); font-weight:700; margin-top:2px; }
+
+/* BARRA */
+.barra{ display:flex; gap:9px; flex-wrap:wrap; margin-bottom:16px; }
+.chip{
+  background:var(--creme); border:3px solid var(--madeira-e); border-radius:24px;
+  padding:6px 15px; font-size:14px; font-weight:800; color:var(--cafe);
+  box-shadow:0 3px 0 rgba(0,0,0,.2);
+}
+.chip b{ color:var(--dourado); }
+.nav{ margin-left:auto; display:flex; gap:7px; }
+.nb{
+  background:var(--leite); border:3px solid var(--madeira-e); border-radius:24px;
+  padding:6px 14px; font-family:inherit; font-size:13.5px; font-weight:800;
+  color:var(--cafe); cursor:pointer; box-shadow:0 3px 0 var(--madeira-e); transition:all .1s;
+}
+.nb:active{ transform:translateY(2px); box-shadow:0 1px 0 var(--madeira-e); }
+.nb.on{ background:var(--canela); color:#fff; }
+
+.tela{ display:none; } .tela.on{ display:block; animation:sobe .25s ease; }
+@keyframes sobe{ from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+
+/* CARTAO */
+.cartao{
+  background:var(--papel); border:4px solid var(--madeira-e); border-radius:14px;
+  padding:18px; margin-bottom:16px; box-shadow:0 5px 0 rgba(0,0,0,.22);
+}
+.c-titulo{ font-size:19px; font-weight:800; color:var(--cafe); margin-bottom:4px; }
+.c-sub{ font-size:13.5px; color:var(--muted); font-weight:600; line-height:1.6; }
+
+/* MESA */
+.mesa{
+  background:linear-gradient(180deg,#f6e8d2,#e9d5b4);
+  border:4px solid var(--madeira-e); border-radius:14px; padding:16px; margin-bottom:14px;
+}
+.cliente{ display:flex; align-items:flex-start; gap:13px; }
+.rosto{
+  font-size:42px; line-height:1; background:#fff; border:3px solid var(--madeira-e);
+  border-radius:50%; width:64px; height:64px; display:flex; align-items:center;
+  justify-content:center; flex-shrink:0;
+}
+.cliente-info{ flex:1; }
+.cliente-nome{ font-size:15px; font-weight:800; }
+.cliente-ctx{ font-size:12.5px; color:var(--muted); font-weight:600; font-style:italic; }
+.fala{
+  background:#fff; border:3px solid var(--madeira-e); border-radius:14px;
+  padding:12px 15px; margin-top:11px; font-size:17px; font-weight:700; line-height:1.5;
+}
+.detalhe{
+  font-size:12.5px; font-style:italic; color:var(--ink2);
+  background:rgba(255,255,255,.6); border-left:4px solid var(--canela);
+  border-radius:0 10px 10px 0; padding:8px 12px; margin-top:10px; font-weight:600;
+}
+
+/* PERGUNTA */
+.pq{
+  background:var(--cafe); color:var(--leite); border-radius:12px;
+  padding:11px 15px; font-size:14px; font-weight:800; margin-bottom:11px;
+}
+.ops{ display:flex; flex-direction:column; gap:9px; }
+.op{
+  background:#fff; border:3px solid var(--madeira-c); border-radius:13px;
+  padding:12px 15px; font-family:inherit; font-size:14.5px; font-weight:700;
+  color:var(--ink2); cursor:pointer; text-align:left; transition:all .12s;
+  box-shadow:0 3px 0 rgba(0,0,0,.1);
+}
+.op:hover:not(:disabled){ background:var(--leite); transform:translateY(-2px); }
+.op:disabled{ cursor:default; opacity:.6; }
+.op.certa{ background:var(--verde-l); border-color:var(--verde); color:var(--verde); opacity:1; }
+.op.errada{ background:var(--vermelho-l); border-color:var(--vermelho); color:var(--vermelho); opacity:1; }
+
+.fb{ border-radius:13px; padding:13px 16px; margin-top:13px; font-size:14px; font-weight:700; display:none; line-height:1.6; }
+.fb.on{ display:block; animation:sobe .25s ease; }
+.fb-ok{ background:var(--verde-l); border:3px solid var(--verde); color:#2a5c37; }
+.fb-no{ background:var(--vermelho-l); border:3px solid var(--vermelho); color:#7a2a1c; }
+.gorjeta{ font-size:13px; font-weight:800; color:var(--dourado); margin-top:7px; }
+
+.btn{
+  font-family:inherit; font-size:15px; font-weight:800; padding:11px 22px;
+  border-radius:13px; border:3px solid var(--madeira-e); cursor:pointer;
+  box-shadow:0 4px 0 var(--madeira-e); transition:all .1s;
+}
+.btn:active{ transform:translateY(3px); box-shadow:0 1px 0 var(--madeira-e); }
+.b-ca{ background:var(--canela); color:#fff; }
+.b-le{ background:var(--leite); color:var(--cafe); }
+.linha{ display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
+
+.nota{
+  width:100%; border:3px solid var(--madeira-c); border-radius:12px; padding:10px 13px;
+  font-family:inherit; font-size:14.5px; color:var(--ink); background:#fff;
+  resize:vertical; min-height:56px; outline:none; line-height:1.5;
+}
+.nota:focus{ border-color:var(--cafe); }
+.nota::placeholder{ color:#c4ae92; font-style:italic; }
+.nota-lb{ font-size:11.5px; font-weight:800; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); margin:12px 0 5px; }
+
+.prog{ height:12px; background:#e4d4bc; border:3px solid var(--madeira-e); border-radius:10px; overflow:hidden; margin:10px 0 5px; }
+.prog i{ display:block; height:100%; background:var(--canela); width:0; transition:width .5s ease; }
+.prog-lb{ font-size:12.5px; font-weight:700; color:var(--muted); }
+
+.turno{
+  display:inline-block; background:var(--dourado); color:#fff;
+  border:3px solid var(--madeira-e); border-radius:20px; padding:3px 14px;
+  font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:.07em; margin-bottom:10px;
+}
+.estrelas{ font-size:21px; letter-spacing:2px; }
+.dica-caixa{
+  background:var(--leite); border:3px dashed var(--madeira-c); border-radius:13px;
+  padding:12px 15px; font-size:13.5px; font-weight:700; color:var(--ink2); margin-bottom:14px; line-height:1.6;
+}
+.resumo-item{
+  background:var(--leite); border:3px solid var(--madeira-c); border-radius:12px;
+  padding:11px 14px; margin-bottom:9px;
+}
+.resumo-dito{ font-size:14px; font-weight:800; color:var(--cafe); }
+.resumo-quis{ font-size:13.5px; color:var(--ink2); font-weight:600; margin-top:3px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="placa">
+    <div class="placa-nome">CAFÉ DA ESQUINA</div>
+    <div class="placa-sub">Ninguém pede as coisas direito. Descubra o que cada cliente quer de verdade</div>
+  </div>
+
+  <div class="barra">
+    <div class="chip">💰 <b id="sGorj">0</b></div>
+    <div class="chip">⭐ <span id="sEstrelas">☆☆☆☆☆</span></div>
+    <div class="nav">
+      <button class="nb on" onclick="ir('jogo',this)">Balcão</button>
+      <button class="nb" onclick="ir('caderno',this)">Caderno</button>
+    </div>
+  </div>
+
+  <!-- JOGO -->
+  <div class="tela on" id="t-jogo">
+    <div class="cartao" id="introBox">
+      <div class="c-titulo">Bem-vinda ao seu primeiro dia!</div>
+      <div class="c-sub" style="margin-bottom:12px">Você vai atender o café hoje. Só tem um detalhe: quase ninguém pede as coisas de forma direta.</div>
+      <div class="dica-caixa">
+        As pessoas raramente dizem "me traga um copo d'água". Elas dizem "nossa, que calor hoje, né?" e esperam que você entenda.<br><br>
+        Seu trabalho não é só entender o que a pessoa <b>disse</b>. É descobrir o que ela <b>queria</b> e fazer a coisa certa.
+      </div>
+      <div class="linha"><button class="btn b-ca" onclick="comecar()">Abrir o café</button></div>
+    </div>
+
+    <div id="jogoBox" style="display:none">
+      <div class="turno" id="turnoTag">Manhã</div>
+      <div class="prog"><i id="progBar"></i></div>
+      <div class="prog-lb" id="progLb">Cliente 1 de 12</div>
+
+      <div class="mesa">
+        <div class="cliente">
+          <div class="rosto" id="cRosto">🙂</div>
+          <div class="cliente-info">
+            <div class="cliente-nome" id="cNome"></div>
+            <div class="cliente-ctx" id="cCtx"></div>
+          </div>
+        </div>
+        <div class="fala" id="cFala"></div>
+        <div class="detalhe" id="cDet"></div>
+      </div>
+
+      <div class="cartao">
+        <div class="pq">O que você faz?</div>
+        <div class="ops" id="cOps"></div>
+        <div class="fb" id="cFb"></div>
+        <div id="extraBox" style="display:none">
+          <div class="nota-lb">Como essa pessoa poderia ter pedido de forma direta?</div>
+          <textarea class="nota" placeholder="Escreva aqui..."></textarea>
+        </div>
+        <div class="linha">
+          <button class="btn b-ca" id="btnProx" style="display:none" onclick="proximo()">Próximo cliente</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="cartao" id="fimBox" style="display:none">
+      <div class="c-titulo">Fim do expediente!</div>
+      <div class="c-sub" style="margin-bottom:12px">Você atendeu 12 clientes e cada um deles falou uma coisa querendo dizer outra.</div>
+      <div style="text-align:center;margin:16px 0">
+        <div class="estrelas" id="fimEstrelas">☆☆☆☆☆</div>
+        <div style="font-size:15px;font-weight:800;color:var(--dourado);margin-top:6px">💰 <span id="fimGorj">0</span> de gorjeta</div>
+      </div>
+      <div class="dica-caixa">
+        O truque que você usou hoje: toda vez que alguém fala algo que parece só um comentário, vale perguntar "por que essa pessoa está me contando isso agora?". Quase sempre tem um pedido escondido ali.
+      </div>
+      <div class="linha">
+        <button class="btn b-ca" onclick="location.reload()">Trabalhar outro dia</button>
+        <button class="btn b-le" onclick="ir('caderno',document.querySelectorAll('.nb')[1])">Ver o caderno</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CADERNO -->
+  <div class="tela" id="t-caderno">
+    <div class="cartao">
+      <div class="c-titulo">Caderno do balcão</div>
+      <div class="c-sub" style="margin-bottom:14px">Tudo que os clientes disseram hoje, e o que eles queriam de verdade.</div>
+      <div id="cadernoLista"><div class="c-sub">Ainda não atendeu ninguém hoje!</div></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+const CLIENTES=[
+ {turno:'Manhã', rosto:'👩', nome:'Dona Zélia', ctx:'sentou na mesa perto da janela, 9h da manhã',
+  fala:'Nossa, que sol forte bate nessa mesa, né?',
+  det:'Ela está apertando os olhos e virou a cadeira de costas para a janela.',
+  ops:['Concordar: "É, hoje o sol tá bravo mesmo!"','Oferecer para mudar ela de mesa','Fechar a cortina sem falar nada e ir embora'],
+  c:1, dito:'Que sol forte bate nessa mesa', quis:'Quero mudar de lugar',
+  fb:'Ela não estava comentando sobre o tempo! Apertar os olhos e virar a cadeira mostram desconforto. Era um pedido disfarçado de observação.'},
+
+ {turno:'Manhã', rosto:'🧑', nome:'Caio', ctx:'está sozinho, olhando a fatia enorme de bolo na vitrine',
+  fala:'Puxa, essa fatia é bem grandona...',
+  det:'Ele falou isso olhando para o bolo e depois olhou para o próprio bolso.',
+  ops:['Dizer: "Pois é, nosso bolo é famoso pelo tamanho!"','Perguntar se ele prefere meia fatia ou dividir','Cortar uma fatia inteira e levar até ele'],
+  c:1, dito:'Essa fatia é bem grandona', quis:'Será que tem uma opção menor?',
+  fb:'"É bem grandona" não era elogio nem reclamação: era uma dúvida educada sobre o tamanho e o preço. Oferecer a meia porção resolve sem deixá-lo sem graça.'},
+
+ {turno:'Manhã', rosto:'👵', nome:'Dona Rute', ctx:'pediu o café faz um tempo e está olhando para a cozinha',
+  fala:'Já faz um tempinho que eu pedi, né?',
+  det:'Ela sorriu ao falar e olhou para o relógio na parede.',
+  ops:['Responder: "Fez sim, uns quinze minutos!"','Ir verificar o pedido e dar uma previsão para ela','Dizer: "A senhora quer pedir mais alguma coisa?"'],
+  c:1, dito:'Já faz um tempinho que eu pedi', quis:'Meu pedido está demorando, pode verificar?',
+  fb:'Ela sorriu para não parecer grosseira, mas o olhar no relógio entrega. Quando alguém comenta sobre o tempo de espera, está cobrando com delicadeza.'},
+
+ {turno:'Manhã', rosto:'🧒', nome:'Téo', ctx:'veio com a mãe, está na ponta dos pés olhando a vitrine',
+  fala:'Mãe, olha o cookie! ...Mas eu não tô com fome não.',
+  det:'Ele continuou olhando para o cookie enquanto dizia que não estava com fome.',
+  ops:['Guardar o cookie: "Então deixa pra próxima!"','Perguntar à mãe se ele pode levar um para depois','Dizer para ele: "Mas você acabou de dizer que quer!"'],
+  c:1, dito:'Eu não tô com fome não', quis:'Eu quero muito, mas acho que não posso pedir',
+  fb:'Ele queria o cookie, mas se adiantou para não ouvir um não. Quando as palavras dizem uma coisa e os olhos continuam na outra, os olhos contam a verdade.'},
+
+ {turno:'Tarde', rosto:'👨', nome:'Seu Horácio', ctx:'está com o casaco fechado até em cima, tremendo de leve',
+  fala:'Você também acha que tá friozinho aqui?',
+  det:'O ar-condicionado está no máximo e ele sentou bem embaixo.',
+  ops:['Responder sinceramente: "Eu acho bom assim!"','Oferecer para diminuir o ar ou mudar ele de lugar','Dizer: "É, hoje esfriou bastante na rua"'],
+  c:1, dito:'Você também acha que tá friozinho?', quis:'Por favor, diminui o ar-condicionado',
+  fb:'A pergunta não era sobre a sua opinião! Era um pedido educado. Repare: responder com sinceridade sobre o que VOCÊ acha deixa a pessoa sem saída.'},
+
+ {turno:'Tarde', rosto:'👩‍🦰', nome:'Bruna', ctx:'você perguntou se estava tudo bem com o almoço dela',
+  fala:'Tá ótimo, tá ótimo!',
+  det:'Ela respondeu bem rápido, sem olhar para você, e o prato está quase intacto depois de meia hora.',
+  ops:['Ficar feliz e sair: "Que bom!"','Perguntar com calma se tem algo que ela não curtiu no prato','Insistir: "Mas você não comeu quase nada!"'],
+  c:1, dito:'Tá ótimo, tá ótimo!', quis:'Não gostei, mas não quero reclamar',
+  fb:'Resposta rápida demais, sem olhar nos olhos, e prato cheio depois de meia hora: as pistas não combinam com as palavras. Perguntar com calma abre espaço sem constranger.'},
+
+ {turno:'Tarde', rosto:'🧕', nome:'Yara', ctx:'está lendo o cardápio há vários minutos, só tem doces nele',
+  fala:'Hmmm... vocês têm alguma coisa diferente?',
+  det:'Ela leu o cardápio três vezes e voltou sempre para a última página.',
+  ops:['Responder: "Temos sim, o cardápio inteiro é diferente!"','Perguntar o que ela procura e sugerir as opções salgadas','Dizer: "Tudo o que temos está no cardápio"'],
+  c:1, dito:'Vocês têm alguma coisa diferente?', quis:'Não achei nada que eu possa ou queira comer aqui',
+  fb:'"Alguma coisa diferente" é o jeito educado de dizer "nada aqui serve para mim". Perguntar o que ela procura resolve sem obrigá-la a explicar o porquê.'},
+
+ {turno:'Tarde', rosto:'🧔', nome:'Marcelo', ctx:'chegou com uma criança pequena e muito agitada',
+  fala:'Ele adora chocolate, viu.',
+  det:'Ele falou isso olhando para o cardápio infantil e depois para você.',
+  ops:['Responder: "Que legal, criança adora mesmo!"','Sugerir as opções de chocolate que servem para crianças','Perguntar se a criança já almoçou'],
+  c:1, dito:'Ele adora chocolate', quis:'Me ajuda a escolher algo de chocolate para ele',
+  fb:'Quando alguém conta uma preferência bem na hora de pedir, está pedindo sugestão. É um pedido disfarçado de informação.'},
+
+ {turno:'Noite', rosto:'👩‍🦱', nome:'Letícia', ctx:'chegou 15 minutos antes do café fechar',
+  fala:'Vocês fecham que horas mesmo?',
+  det:'Ela perguntou já com a mão na porta, sem entrar de vez.',
+  ops:['Responder só o horário: "Às 20h!"','Dizer o horário e já avisar o que ainda dá tempo de pedir','Dizer: "Já estamos fechando"'],
+  c:1, dito:'Vocês fecham que horas mesmo?', quis:'Ainda dá tempo de eu entrar e pedir algo?',
+  fb:'A pergunta parecia sobre horário, mas era sobre permissão. Responder só o número deixa ela sem saber se pode entrar. Dizer o que dá tempo resolve a dúvida real.'},
+
+ {turno:'Noite', rosto:'🙋', nome:'Dani', ctx:'a fila está grande e ela acabou de chegar',
+  fala:'Nossa, que fila hein!',
+  det:'Ela está mexendo no celular e olhando para o relógio.',
+  ops:['Concordar: "Pois é, hoje tá cheio!"','Dizer quanto tempo mais ou menos ela vai esperar','Pedir para ela voltar outro dia'],
+  c:1, dito:'Que fila hein!', quis:'Quanto tempo eu vou ter que esperar?',
+  fb:'Comentário sobre a fila quase sempre é pergunta sobre o tempo de espera. Dar uma previsão deixa a pessoa decidir se fica ou não.'},
+
+ {turno:'Noite', rosto:'👦', nome:'Juba', ctx:'você avisou que o suco de maracujá acabou',
+  fala:'Ah... eu ia pedir aquele. Mas tudo bem.',
+  det:'Ele desanimou visivelmente e ficou um tempo sem escolher outra coisa.',
+  ops:['Esperar ele escolher outra coisa em silêncio','Reconhecer a frustração e sugerir algo parecido','Dizer: "Tem vários outros sucos, escolhe outro!"'],
+  c:1, dito:'Mas tudo bem', quis:'Fiquei decepcionado e não sei o que pedir agora',
+  fb:'O "mas tudo bem" veio junto com o desânimo e o silêncio. Reconhecer a frustração antes de sugerir a alternativa faz a pessoa se sentir vista, e não apenas corrigida.'},
+
+ {turno:'Noite', rosto:'👴', nome:'Seu Alcides', ctx:'é cliente há anos e vem toda semana no mesmo horário',
+  fala:'Faz tempo que eu não vejo movimento assim por aqui, hein.',
+  det:'Ele disse isso olhando a mesa vazia onde costumava sentar com a esposa.',
+  ops:['Responder: "É, hoje tá bem cheio mesmo!"','Perceber que ele quer conversa e puxar assunto com ele','Oferecer o cardápio e ir atender outra mesa'],
+  c:1, dito:'Faz tempo que eu não vejo movimento assim', quis:'Estou com saudade e queria companhia',
+  fb:'Nem todo pedido é de comida. O olhar para a mesa vazia e o comentário sobre o passado mostram que ele queria conversa. Às vezes a pessoa pede companhia falando de outra coisa.'}
+];
+
+let idx=0, gorj=0, acertos=0, respondido=false;
+const caderno=[];
+
+function ir(id,btn){
+  ['jogo','caderno'].forEach(t=>document.getElementById('t-'+t).classList.remove('on'));
+  document.getElementById('t-'+id).classList.add('on');
+  if(btn){ document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on')); btn.classList.add('on'); }
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function estrelas(){
+  const n=Math.max(1,Math.round(acertos/CLIENTES.length*5));
+  return '★'.repeat(n)+'☆'.repeat(5-n);
+}
+function atualizarBarra(){
+  document.getElementById('sGorj').textContent=gorj;
+  document.getElementById('sEstrelas').textContent = idx===0?'☆☆☆☆☆':estrelas();
+}
+function comecar(){
+  document.getElementById('introBox').style.display='none';
+  document.getElementById('jogoBox').style.display='block';
+  mostrar();
+}
+function mostrar(){
+  respondido=false;
+  const c=CLIENTES[idx];
+  document.getElementById('turnoTag').textContent=c.turno;
+  document.getElementById('progBar').style.width=Math.round(idx/CLIENTES.length*100)+'%';
+  document.getElementById('progLb').textContent='Cliente '+(idx+1)+' de '+CLIENTES.length;
+  document.getElementById('cRosto').textContent=c.rosto;
+  document.getElementById('cNome').textContent=c.nome;
+  document.getElementById('cCtx').textContent=c.ctx;
+  document.getElementById('cFala').textContent='"'+c.fala+'"';
+  document.getElementById('cDet').textContent=c.det;
+  const sh=c.ops.map((o,j)=>({t:o,o:j})).sort(()=>Math.random()-.5);
+  const nc=sh.findIndex(x=>x.o===c.c);
+  document.getElementById('cOps').innerHTML=sh.map((x,j)=>
+    `<button class="op" onclick="responder(${j},${nc},this)">${esc(x.t)}</button>`).join('');
+  const fb=document.getElementById('cFb'); fb.className='fb'; fb.innerHTML='';
+  document.getElementById('extraBox').style.display='none';
+  document.getElementById('btnProx').style.display='none';
+}
+function responder(escolha,certa,btn){
+  if(respondido)return; respondido=true;
+  const c=CLIENTES[idx];
+  const ops=document.querySelectorAll('#cOps .op');
+  ops.forEach(o=>o.disabled=true);
+  ops[certa].classList.add('certa');
+  const fb=document.getElementById('cFb');
+  if(escolha===certa){
+    acertos++; gorj+=10;
+    fb.className='fb on fb-ok';
+    fb.innerHTML='Atendimento perfeito! '+esc(c.fb)+'<div class="gorjeta">+ 10 de gorjeta 💰</div>';
+  } else {
+    btn.classList.add('errada');
+    gorj+=4;
+    fb.className='fb on fb-no';
+    fb.innerHTML='Quase! O atendimento em verde funcionaria melhor. '+esc(c.fb)+'<div class="gorjeta">+ 4 de gorjeta 💰</div>';
+  }
+  caderno.push(c);
+  montarCaderno();
+  atualizarBarra();
+  document.getElementById('extraBox').style.display='block';
+  const b=document.getElementById('btnProx');
+  b.style.display='inline-block';
+  b.textContent = idx<CLIENTES.length-1 ? 'Próximo cliente' : 'Fechar o café';
+}
+function proximo(){
+  if(idx<CLIENTES.length-1){ idx++; mostrar(); }
+  else {
+    document.getElementById('jogoBox').style.display='none';
+    document.getElementById('fimBox').style.display='block';
+    document.getElementById('fimEstrelas').textContent=estrelas();
+    document.getElementById('fimGorj').textContent=gorj;
+    document.getElementById('progBar').style.width='100%';
+  }
+}
+function montarCaderno(){
+  document.getElementById('cadernoLista').innerHTML=caderno.map(c=>`
+    <div class="resumo-item">
+      <div class="resumo-dito">Disse: "${esc(c.dito)}"</div>
+      <div class="resumo-quis">Queria dizer: ${esc(c.quis)}</div>
+    </div>`).join('');
+}
+atualizarBarra();
+</script>
+</body>
+</html>
